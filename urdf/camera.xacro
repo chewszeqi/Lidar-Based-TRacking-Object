@@ -1,0 +1,56 @@
+<?xml version="1.0"?>
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro" name="radu">
+  <link name='rgb_cam_camera_link'>
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <box size="0.02 0.04 0.01" />
+      </geometry>
+    </visual>
+  </link>  <joint name="rgb_cam_camera_link_joint" type="fixed">
+    <origin rpy="0 0 0" xyz="0.30 0.0 0.065" />
+    <parent link="base_link" />
+    <child link="rgb_cam_camera_link" />
+    <axis xyz="0 0 0" />
+  </joint>  
+  <link name="rgb_cam_camera_link_frame"></link>
+  <joint name="rgb_cam_camera_frame_joint" type="fixed">
+    <origin xyz="0.01 0 0" rpy="0 0 0" />
+    <parent link="rgb_cam_camera_link" />
+    <child link="rgb_cam_camera_link_frame" />
+    <axis xyz="0 0 0" />
+  </joint>
+
+  <gazebo reference="rgb_cam_camera_link_frame">
+    <sensor type="camera" name="rgb_camera">
+      <update_rate>10.0</update_rate>
+      <camera name="rgb_camera">        
+      <pose>0 0 0 0 0 0</pose>        
+      <horizontal_fov>1.3962634</horizontal_fov>
+        <image>
+          <width>640</width>
+          <height>480</height>
+          <format>YUYV</format>
+        </image>
+        <clip>
+          <near>0.005</near>
+          <far>10.0</far>
+        </clip>
+      </camera>      
+      <plugin name="camera_controller" filename="libgazebo_ros_camera.so">
+        <alwaysOn>true</alwaysOn>
+        <updateRate>0.0</updateRate>
+        <cameraName>rgb_camera</cameraName>
+        <imageTopicName>image_raw</imageTopicName>
+        <cameraInfoTopicName>camera_info</cameraInfoTopicName>
+        <frameName>rgb_cam_camera_link_frame</frameName>
+        <hackBaseline>0.07</hackBaseline>
+        <distortionK1>0.0</distortionK1>
+        <distortionK2>0.0</distortionK2>
+        <distortionK3>0.0</distortionK3>
+        <distortionT1>0.0</distortionT1>
+        <distortionT2>0.0</distortionT2>
+      </plugin>
+    </sensor>
+  </gazebo>
+</robot>

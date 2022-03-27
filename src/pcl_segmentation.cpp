@@ -41,6 +41,47 @@ void GetAxisAlignedBoundingBox(pcl::PointCloud<pcl::PointXYZ>::Ptr cloud,
   ROS_INFO("%f %f %f %f %f %f", pose->position.x, pose->position.y, pose->position.z, dimensions->x, dimensions->y, dimensions->z);
 }
 
+void SegmentTabletopScene(pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud,
+                          std::vector<Object>* objects) {
+  pcl::ModelCoefficients::Ptr coeff(new pcl::ModelCoefficients());
+  pcl::PointIndices::Ptr table_inliers(new pcl::PointIndices());
+  SegmentSurface(cloud, table_inliers, coeff);
+
+  PointCloudC::Ptr cloud_out(new PointCloudC());
+  pcl::ExtractIndices<PointC> extract;
+  extract.setInputCloud(cloud);
+  extract.setIndices(table_inliers);
+  extract.setNegative(false);
+  extract.filter(*cloud_out);
+
+  std::vector<pcl::PointIndices> object_indices;
+  SegmentSurfaceObjects(cloud, table_inliers, &object_indices);
+
+  extract.setInputCloud(cloud);
+  extract.setNegative(false);
+  for (size_t i = 0; i < object_indices.size(); ++i) {
+    // Reify indices into a point cloud of the object.
+    pcl::PointIndices::Ptr indices(new pcl::PointIndices);
+    *indices = object_indices[i];
+    extract.setIndices(indices);
+    PointCloudC::Ptr object_cloud(new PointCloudC());
+    extract.filter(*object_cloud);
+
+    PointCloudC::Ptr extract_out(new PointCloudC());
+    shape_msgs::SolidPrimitive shape;
+    geometry_msgs::Pose obj_pose;
+    FitBox(*object_cloud, coeff, *extract_out, shape, obj_pose);
+
+    Object obj;
+    obj.cloud = object_cloud;
+    obj.pose = obj_pose;
+    obj.dimensions.x = shape.dimensions[0];
+    obj.dimensions.y = shape.dimensions[1];
+    obj.dimensions.z = shape.dimensions[2];
+    objects->push_back(obj);
+  }
+}
+
 class cloudHandler
 {
 public:
@@ -56,7 +97,6 @@ public:
 
     void cloudCB(const sensor_msgs::PointCloud2 &input)
     {
-        pcl::PointCloud<pcl::PointXYZ> cloud;
         // pcl::PointCloud<pcl::PointXYZ> cloud_clustered;
         //pcl::PointCloud<pcl::PointXYZ> cluster;
 
@@ -78,24 +118,49 @@ public:
         // exctract the indices pertaining to each cluster and store in a vector of pcl::PointIndices
         ec.extract (cluster);
 
-        // boost::shared_ptr<pcl::visualization::PCLVisualizer> viewer_cluster(new pcl::visualization::PCLVisualizer("extracted clusters"));
-        // viewer_cluster->setBackgroundColor(0, 0, 0);
+        // for (size_t i = 0; i < cluster.size(); ++i) {
+        //     const Object& object = cluster[i];
 
-        // viewer_cluster->addCoordinateSystem(1.0);
-        // viewer_cluster->initCameraParameters();
-        // viewer_cluster->setRepresentationToWireframeForAllActors();
-        // std::vector<ros::Publisher> pub_pcl_vec;
-        // std::vector<ros::Publisher> pub_marker_vec;
-        
-        // for (int i = 0; i < cluster.size(); ++i)
-        // {
-        //     std::string topicNameCluster = "pcl_cluster" + boost::lexical_cast<std::string>(i);
-        //     std::string topicNameMarker = "visualization_marker" + boost::lexical_cast<std::string>(i);
-        //     pcl_markerpub = nh.advertise<visualization_msgs::Marker>(topicNameMarker, 100);
-        //     pcl_pub = nh.advertise<sensor_msgs::PointCloud2>(topicNameCluster, 1);
-        //     pub_pcl_vec.push_back(pcl_pub);
-        //     pub_marker_vec.push_back(pcl_markerpub);
-        // }
+        //     // Publish a bounding box around it.
+        //     visualization_msgs::Marker object_marker;
+        //     object_marker.ns = "objects";
+        //     object_marker.id = i;
+        //     object_marker.header.frame_id = "base_link";
+        //     object_marker.type = visualization_msgs::Marker::CUBE;
+        //     object_marker.pose = object.pose;
+        //     object_marker.scale = object.dimensions;
+        //     object_marker.color.g = 1;
+        //     object_marker.color.a = 0.3;
+        //     marker_pub_.publish(object_marker);
+
+            // // Recognize the object.
+            // std::string name;
+            // double confidence;
+            // recognizer_.Recognize(object, &name, &confidence);
+            // confidence = round(1000 * confidence) / 1000;
+
+            // std::stringstream ss;
+            // ss << name << " (" << confidence << ")";
+
+            // // Publish the recognition result.
+            // visualization_msgs::Marker name_marker;
+            // name_marker.ns = "recognition";
+            // name_marker.id = i;
+            // name_marker.header.frame_id = "base_link";
+            // name_marker.type = visualization_msgs::Marker::TEXT_VIEW_FACING;
+            // name_marker.pose.position = object.pose.position;
+            // name_marker.pose.position.z += 0.1;
+            // name_marker.pose.orientation.w = 1;
+            // name_marker.scale.x = 0.025;
+            // name_marker.scale.y = 0.025;
+            // name_marker.scale.z = 0.025;
+            // name_marker.color.r = 0;
+            // name_marker.color.g = 0;
+            // name_marker.color.b = 1.0;
+            // name_marker.color.a = 1.0;
+            // name_marker.text = ss.str();
+            // marker_pub_.publish(name_marker);
+        }
         
         pcl::PCLPointCloud2 outputPCL;
         // pcl::PCDWriter writer;

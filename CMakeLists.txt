@@ -16,6 +16,11 @@ find_package(catkin REQUIRED COMPONENTS
   sensor_msgs
   std_msgs
   message_generation
+  urdf
+  tf
+  nav_msgs
+  geometry_msgs
+  laser_geometry
 )
 
 ## System dependencies are found with CMake's conventions
@@ -144,6 +149,8 @@ add_executable(pcl_passthrough src/pcl_passthrough.cpp)
 add_executable(pcl_planar_segmentation src/pcl_planar_segmentation.cpp)
 add_executable(pcl_euclidean_clustering src/pcl_euclidean_clustering.cpp)
 add_executable(pcl_partitioning src/pcl_partitioning.cpp)
+# add_executable(laserToPointCloud src/laserToPointCloud.cpp)
+# add_executable(pcl_visualizer src/pcl_visualizer.cpp)
 
 add_dependencies(pcl_sample lidar_based_tracking_object_generate_messages_cpp)
 add_dependencies(pcl_read lidar_based_tracking_object_generate_messages_cpp)
@@ -153,6 +160,8 @@ add_dependencies(pcl_passthrough lidar_based_tracking_object_generate_messages_c
 add_dependencies(pcl_planar_segmentation lidar_based_tracking_object_generate_messages_cpp)
 add_dependencies(pcl_euclidean_clustering lidar_based_tracking_object_generate_messages_cpp)
 add_dependencies(pcl_partitioning lidar_based_tracking_object_generate_messages_cpp)
+# add_dependencies(laserToPointCloud lidar_based_tracking_object_generate_messages_cpp)
+# add_dependencies(pcl_visualizer lidar_based_tracking_object_generate_messages_cpp)
 
 target_link_libraries(pcl_sample ${catkin_LIBRARIES})
 target_link_libraries(pcl_read ${catkin_LIBRARIES})
@@ -162,6 +171,8 @@ target_link_libraries(pcl_passthrough ${catkin_LIBRARIES})
 target_link_libraries(pcl_planar_segmentation ${catkin_LIBRARIES})
 target_link_libraries(pcl_euclidean_clustering ${catkin_LIBRARIES})
 target_link_libraries(pcl_partitioning ${catkin_LIBRARIES})
+# target_link_libraries(laserToPointCloud ${catkin_LIBRARIES})
+# target_link_libraries(pcl_visualizer ${catkin_LIBRARIES})
 
 
 ## Declare a C++ executable
@@ -180,8 +191,12 @@ target_link_libraries(pcl_partitioning ${catkin_LIBRARIES})
 # add_dependencies(${PROJECT_NAME}_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
 ## Specify libraries to link a library or executable target against
-# target_link_libraries(${PROJECT_NAME}_node
-#   ${catkin_LIBRARIES}
+# target_link_libraries(pcl_euclidean_clustering 
+#   pcl_visualization
+# )
+
+# target_link_libraries(pcl_visualizer 
+#   pcl_visualization
 # )
 
 #############

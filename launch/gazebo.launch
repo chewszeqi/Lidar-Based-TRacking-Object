@@ -1,0 +1,111 @@
+<?xml version="1.0"?>
+<launch>
+
+  <node pkg="tf" type="static_transform_publisher" name="laser" args="0 0 -0.15 0 0 0 1 base_link lidar_link 100" />
+  <node pkg="tf" type="static_transform_publisher" name="imu" args="0 0 0.01 0 0 0 1 base_link imu_link 100" />
+  <node pkg="tf" type="static_transform_publisher" name="baselink" args="0 0 0.12 0 0 0 1 base_link base_footprint 100" />
+
+  <!-- these are the arguments you can pass this launch file, for example paused:=true -->
+  <arg name="paused" default="false"/>
+  <arg name="use_sim_time" default="true"/>
+  <arg name="gui" default="true"/>
+  <arg name="headless" default="false"/>
+  <arg name="debug" default="false"/>
+  <arg name="verbose" default="true"/>
+  <arg name="world_name" default="$(find lidar_based_tracking_object)/worlds/shape.sdf"/> 
+  <arg name="rvizconfig" default="$(find lidar_based_tracking_object)/rviz/urdf.rviz" />
+
+  <!-- We resume the logic in empty_world.launch, changing only the name of the world to be launched -->
+   <include file="$(find gazebo_ros)/launch/empty_world.launch"> 
+    <arg name="debug" value="$(arg debug)" />
+    <arg name="gui" value="$(arg gui)" />
+    <arg name="paused" value="$(arg paused)"/>
+    <arg name="use_sim_time" value="$(arg use_sim_time)"/>
+    <arg name="headless" value="$(arg headless)"/>
+    <arg name="verbose" value="$(arg verbose)"/> -->
+    <arg name="world_name" value="$(arg world_name)"/>
+  </include>
+
+  <!-- Load the URDF into the ROS Parameter Server -->
+  <arg name="model" default="$(find lidar_based_tracking_object)/urdf/tutorial.xacro" />
+
+  <!-- Spawn the example robot -->
+  <param name="robot_description" command="$(find xacro)/xacro.py $(arg model)" />
+  <node pkg="gazebo_ros" type="spawn_model" name="spawn_model" args="-urdf -param /robot_description -model example"/>
+  <node pkg="robot_state_publisher" type="robot_state_publisher" name="robot_state_publisher">
+    <param name="publish_frequency" type="double" value="30.0" />
+  </node>
+  <node pkg="robot_localization" type="ekf_localization_node" name="ekf_filter_node" clear_params="true"> 
+    <param name="frequency" value="10"/>
+      <param name="sensor_timeout" value="2.0"/>
+      <param name="two_d_mode" value="true"/>  
+      <param name="map_frame" value="map"/>
+      <param name="odom_frame" value="odom"/>
+      <param name="base_link_frame" value="base_link"/>
+      <param name="world_frame" value="odom"/> 
+      <!-- <param name="print_diagnostics" value="true"/> -->
+      <param name="publish_acceleration" value="true"/>
+      <param name="publish_tf" value="true"/>
+      <param name="imu0" value="/demo/imu"/>
+      <rosparam param="imu0_config">[false, false, false,
+                                    true,  true,  true,
+                                    false,  false,  false,
+                                    false,  false,  false,
+                                    false,  false,  false]</rosparam>
+      <param name="imu0_differential" value="false"/>   <!-- was false -->
+      <!-- <param name="imu0_remove_gravitational_acceleration" value="true"/> -->
+
+      <param name="odom0" value="/demo/odom"/>
+      <!-- fuse X and Y position, yaw, X˙, and yaw˙. -->
+      <!-- <rosparam param="odom0_config">[true,  true,  true,
+                                    false, false, false,
+                                    false, false, false,
+                                    false, false, false,
+                                    false, false, false]</rosparam> -->
+      <rosparam param="odom0_config">[true,  true,  false,
+                                      false, false, false,
+                                      false, false, false,
+                                      false, false, true,
+                                      false, false, false]</rosparam>
+
+      <param name="odom0_differential" value="false"/> 
+  </node>
+  <node name="rviz" pkg="rviz" type="rviz" args="-d $(arg rvizconfig)" required="true"/>
+
+  <!-- <node pkg="slam_toolbox" type="async_slam_toolbox_node" name="slam_toolbox" output="screen">
+    <rosparam command="load" file="$(find slam_toolbox)/config/mapper_params_online_async.yaml" />
+    <remap from="scan" to="scan_filtered" />
+  </node> -->
+ 
+
+  <node name="map_server" pkg="map_server" type="map_server" args="$(find lidar_based_tracking_object)/maps/shape.yaml" output="screen"/>
+
+  <include file="$(find amcl)/examples/amcl_diff.launch" >
+  </include> 
+
+  <node pkg="move_base" type="move_base" respawn="false" name="move_base" output="screen">
+    <remap from="scan" to="scan_filtered" />
+    <param name="controller_frequency" value="10.0"/>
+    <param name="controller_patiente" value="15.0"/>
+    <rosparam file="$(find lidar_based_tracking_object)/launch/costmap_common_params.yaml" command="load" ns="global_costmap" />
+    <rosparam file="$(find lidar_based_tracking_object)/launch/costmap_common_params.yaml" command="load" ns="local_costmap" />
+    <rosparam file="$(find lidar_based_tracking_object)/launch/local_costmap_params.yaml" command="load" />
+    <rosparam file="$(find lidar_based_tracking_object)/launch/global_costmap_params.yaml" command="load" />
+    <rosparam file="$(find lidar_based_tracking_object)/launch/base_local_planner_params.yaml" command="load" />
+  </node>
+
+  <node pkg="laser_filters" type="scan_to_scan_filter_chain" name="laser_filter">
+    <rosparam command="load" file="$(find lidar_based_tracking_object)/launch/laser_config.yaml" />
+  </node> 
+
+  <!-- <node name ="pcl_sample" pkg="lidar_based_tracking_object" type="pcl_sample"/>
+    <node name ="pcl_read" pkg="lidar_based_tracking_object" type="pcl_read"/>
+    <node name ="pcl_filter" pkg="lidar_based_tracking_object" type="pcl_filter"/>
+    <node name ="pcl_downsampling" pkg="lidar_based_tracking_object" type="pcl_downsampling"/>
+    <node name ="pcl_passthrough" pkg="lidar_based_tracking_object" type="pcl_passthrough"/>
+    <node name ="pcl_partitioning" pkg="lidar_based_tracking_object" type="pcl_partitioning"/>
+    <node name ="pcl_planar_segmentation" pkg="lidar_based_tracking_object" type="pcl_planar_segmentation"/>
+    <node name ="pcl_euclidean_clustering" pkg="lidar_based_tracking_object" type="pcl_euclidean_clustering"/>
+    <node name ="laserToPointCloud" pkg="lidar_based_tracking_object" type="laserToPointCloud"/> -->
+
+</launch>

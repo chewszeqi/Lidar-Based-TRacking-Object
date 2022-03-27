@@ -36,7 +36,7 @@ public:
         segmentation.setMaxIterations(1000);
         segmentation.setDistanceThreshold(0.01);
         segmentation.setInputCloud(cloud.makeShared());
-        segmentation.segment(*inliers, coefficients);
+        segmentation.segment(inliers, coefficients);
 
         // Publish the model coefficients
         pcl_msgs::ModelCoefficients ros_coefficients;

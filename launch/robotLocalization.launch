@@ -1,0 +1,10 @@
+<?xml version="1.0"?>
+<launch>
+    <node pkg="robot_localization" type="ekf_localization_node" name="ekf_filter_node" clear_params="true"> 
+    <rosparam command="load" file="$(find lidar_based_tracking_object)/config/ekf.yaml" />
+    <remap from="imu/data" to="demo/imu"/>  
+    <remap from="odom" to="demo/odom"/>
+    </node>
+  <!-- <node name="rviz" pkg="rviz" type="rviz" args="-d $(arg rvizconfig)" required="true"/> -->
+
+</launch>

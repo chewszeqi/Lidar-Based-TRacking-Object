@@ -8,4 +8,6 @@
     <node name ="pcl_partitioning" pkg="lidar_based_tracking_object" type="pcl_partitioning"/>
     <node name ="pcl_planar_segmentation" pkg="lidar_based_tracking_object" type="pcl_planar_segmentation"/>
     <node name ="pcl_euclidean_clustering" pkg="lidar_based_tracking_object" type="pcl_euclidean_clustering"/>
+    <!-- <node name ="laserToPointCloud" pkg="lidar_based_tracking_object" type="laserToPointCloud"/> -->
+    <!-- <node name ="pcl_visualizer" pkg="lidar_based_tracking_object" type="pcl_visualizer"/> -->
 </launch>
