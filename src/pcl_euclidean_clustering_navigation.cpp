@@ -98,7 +98,7 @@ public:
             object_marker.ns = "objects";
             object_marker.id = cluster_i;
             ROS_INFO("object marker id : %d", object_marker.id);
-            object_marker.header.frame_id = "odom";
+            object_marker.header.frame_id = "camera_depth_frame";
             object_marker.type = visualization_msgs::Marker::CUBE;
             GetAxisAlignedBoundingBox(clusterPtr, &object_marker.pose, &object_marker.scale);
             object_marker.color.g = 1;
@@ -112,7 +112,7 @@ public:
             pcl::toPCLPointCloud2( *clusterPtr ,outputPCL);
             //Convert to ROS data type
             pcl_conversions::fromPCL(outputPCL, output);
-            output.header.frame_id = "odom";
+            output.header.frame_id = "camera_depth_frame";
             pcl_pub.publish(output);
 
         }
@@ -135,4 +135,3 @@ main(int argc, char **argv)
 
     return 0;
 }
-

@@ -4,8 +4,8 @@
     <node name ="pcl_read" pkg="lidar_based_tracking_object" type="pcl_read"/>
     <node name ="pcl_filter" pkg="lidar_based_tracking_object" type="pcl_filter"/>
     <node name ="pcl_downsampling" pkg="lidar_based_tracking_object" type="pcl_downsampling"/>
-    <node name ="pcl_passthrough" pkg="lidar_based_tracking_object" type="pcl_passthrough"/>
-    <node name ="pcl_partitioning" pkg="lidar_based_tracking_object" type="pcl_partitioning"/>
+    <!-- <node name ="pcl_passthrough" pkg="lidar_based_tracking_object" type="pcl_passthrough"/> -->
+    <!-- <node name ="pcl_partitioning" pkg="lidar_based_tracking_object" type="pcl_partitioning"/> -->
     <node name ="pcl_planar_segmentation" pkg="lidar_based_tracking_object" type="pcl_planar_segmentation"/>
     <node name ="pcl_euclidean_clustering" pkg="lidar_based_tracking_object" type="pcl_euclidean_clustering"/>
     <!-- <node name ="laserToPointCloud" pkg="lidar_based_tracking_object" type="laserToPointCloud"/> -->

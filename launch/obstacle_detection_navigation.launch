@@ -97,6 +97,12 @@
   <node pkg="laser_filters" type="scan_to_scan_filter_chain" name="laser_filter">
     <rosparam command="load" file="$(find lidar_based_tracking_object)/launch/laser_config.yaml" />
   </node> 
+
+  
+    <node name ="pcl_filter_navigation" pkg="lidar_based_tracking_object" type="pcl_filter_navigation"/>
+    <node name ="pcl_downsampling" pkg="lidar_based_tracking_object" type="pcl_downsampling"/>
+    <node name ="pcl_planar_segmentation" pkg="lidar_based_tracking_object" type="pcl_planar_segmentation"/>
+    <node name ="pcl_euclidean_clustering_navigation" pkg="lidar_based_tracking_object" type="pcl_euclidean_clustering_navigation"/>
     
 
 </launch>
